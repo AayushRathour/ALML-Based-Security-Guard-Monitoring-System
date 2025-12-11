@@ -1,0 +1,443 @@
+<!-- backend/templates/monitoring/home.html -->
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Guard Monitoring System - AI-Powered Surveillance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(0.95);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+            }
+        }
+        
+        .scroll-down {
+            animation: scroll-down 2s ease-in-out infinite;
+        }
+        
+        @keyframes scroll-down {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-lg shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-halved text-3xl gradient-text mr-3"></i>
+                    <span class="text-xl font-bold text-gray-900">GuardMonitor AI</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-purple-600 transition">Features</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-purple-600 transition">How It Works</a>
+                    <a href="#technology" class="text-gray-700 hover:text-purple-600 transition">Technology</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="gradient-bg text-white px-6 py-2 rounded-full hover:opacity-90 transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="gradient-bg text-white px-6 py-2 rounded-full hover:opacity-90 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Get Started
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-32 pb-20 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-float"></div>
+            <div class="absolute bottom-20 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-float" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center">
+                <div class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-lg rounded-full text-white text-sm mb-8">
+                    <span class="pulse-ring inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                    AI-Powered Security Solution
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6">
+                    Smart Security<br/>
+                    <span class="text-yellow-300">Monitoring System</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto">
+                    Real-time AI detection with YOLOv8 and MediaPipe. Protect your premises with cutting-edge computer vision technology.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="bg-white text-purple-600 px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition transform hover:scale-105">
+                        <i class="fas fa-rocket mr-2"></i>Open Dashboard
+                    </a>
+                    <a href="{% url 'live_monitor' %}" class="bg-purple-900/50 backdrop-blur-lg text-white px-8 py-4 rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-purple-900/70 transition">
+                        <i class="fas fa-video mr-2"></i>Live Monitor
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="bg-white text-purple-600 px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition transform hover:scale-105">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 shadow-xl">
+                        <i class="fas fa-user-plus mr-2"></i>Register Free
+                    </a>
+                    <a href="#features" class="bg-purple-900/50 backdrop-blur-lg text-white px-8 py-4 rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-purple-900/70 transition">
+                        <i class="fas fa-info-circle mr-2"></i>Learn More
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-white">
+                    <div>
+                        <div class="text-4xl font-bold">99.9%</div>
+                        <div class="text-white/80">Accuracy</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold">30 FPS</div>
+                        <div class="text-white/80">Real-time</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold">24/7</div>
+                        <div class="text-white/80">Monitoring</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold">AI</div>
+                        <div class="text-white/80">Powered</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+            <a href="#features" class="text-white scroll-down">
+                <i class="fas fa-chevron-down text-3xl"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-4 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Powerful <span class="gradient-text">Features</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Everything you need for comprehensive security monitoring
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform rotate-3">
+                        <i class="fas fa-video text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Real-Time Detection</h3>
+                    <p class="text-gray-600 mb-4">
+                        Live video stream with instant person detection using YOLOv8 neural network. Get immediate alerts when someone enters your monitored area.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform -rotate-3">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">AI-Powered Analysis</h3>
+                    <p class="text-gray-600 mb-4">
+                        Advanced pose detection with MediaPipe. Track guard presence, posture analysis, and behavioral patterns automatically.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform rotate-3">
+                        <i class="fas fa-bell text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Smart Alerts</h3>
+                    <p class="text-gray-600 mb-4">
+                        Instant notifications with confidence scoring. Reduce false positives with intelligent filtering and customizable thresholds.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform -rotate-3">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Analytics Dashboard</h3>
+                    <p class="text-gray-600 mb-4">
+                        Comprehensive statistics, detection logs, and visual reports. Track patterns and optimize your security strategy.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform rotate-3">
+                        <i class="fas fa-cog text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Custom Training</h3>
+                    <p class="text-gray-600 mb-4">
+                        Train models on your own datasets. Fine-tune detection for your specific environment and improve accuracy over time.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center mb-6 transform -rotate-3">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Secure & Private</h3>
+                    <p class="text-gray-600 mb-4">
+                        All processing happens locally. Your video feeds and data never leave your infrastructure. Full privacy guaranteed.
+                    </p>
+                    <div class="flex items-center text-purple-600 font-semibold">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 px-4 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    How It <span class="gradient-text">Works</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Get started in minutes with our simple 4-step process
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 gradient-bg rounded-full flex items-center justify-center mx-auto mb-6 text-white text-3xl font-bold">
+                        1
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Install & Setup</h3>
+                    <p class="text-gray-600">
+                        Run our automated setup script. Everything installs in under 5 minutes.
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 gradient-bg rounded-full flex items-center justify-center mx-auto mb-6 text-white text-3xl font-bold">
+                        2
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Connect Camera</h3>
+                    <p class="text-gray-600">
+                        Plug in your webcam or configure IP camera. System auto-detects.
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 gradient-bg rounded-full flex items-center justify-center mx-auto mb-6 text-white text-3xl font-bold">
+                        3
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Start Monitoring</h3>
+                    <p class="text-gray-600">
+                        Click "Start" and let AI handle detection. Configure alerts as needed.
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 gradient-bg rounded-full flex items-center justify-center mx-auto mb-6 text-white text-3xl font-bold">
+                        4
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Review & Analyze</h3>
+                    <p class="text-gray-600">
+                        Check alerts, view recordings, and analyze patterns in your dashboard.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section id="technology" class="py-20 px-4 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Powered by <span class="gradient-text">Cutting-Edge AI</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Built with the latest in computer vision and deep learning
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+                <div class="bg-white rounded-xl p-6 shadow-lg text-center">
+                    <i class="fas fa-robot text-4xl gradient-text mb-3"></i>
+                    <h4 class="font-bold text-gray-900">YOLOv8</h4>
+                    <p class="text-sm text-gray-600">Object Detection</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg text-center">
+                    <i class="fab fa-python text-4xl gradient-text mb-3"></i>
+                    <h4 class="font-bold text-gray-900">Python</h4>
+                    <p class="text-sm text-gray-600">Backend</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg text-center">
+                    <i class="fas fa-server text-4xl gradient-text mb-3"></i>
+                    <h4 class="font-bold text-gray-900">Django</h4>
+                    <p class="text-sm text-gray-600">Web Framework</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg text-center">
+                    <i class="fas fa-eye text-4xl gradient-text mb-3"></i>
+                    <h4 class="font-bold text-gray-900">OpenCV</h4>
+                    <p class="text-sm text-gray-600">Computer Vision</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="hero-gradient py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                Ready to Secure Your Premises?
+            </h2>
+            <p class="text-xl text-white/90 mb-10">
+                Join organizations using AI-powered security monitoring
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl transition transform hover:scale-105">
+                <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="inline-block bg-white text-purple-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl transition transform hover:scale-105">
+                <i class="fas fa-rocket mr-2"></i>Get Started Now
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-shield-halved text-3xl text-purple-400 mr-3"></i>
+                        <span class="text-xl font-bold">GuardMonitor AI</span>
+                    </div>
+                    <p class="text-gray-400">
+                        AI-powered security monitoring for modern businesses.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="{% url 'help' %}" class="hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white">API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Privacy</a></li>
+                        <li><a href="#" class="hover:text-white">Terms</a></li>
+                        <li><a href="#" class="hover:text-white">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 GuardMonitor AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

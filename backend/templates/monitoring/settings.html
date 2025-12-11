@@ -1,0 +1,274 @@
+<!-- backend/templates/monitoring/settings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Settings - Guard Monitoring System{% endblock %}
+
+{% block content %}
+<div class="py-6">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-cog mr-2"></i>Settings
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Configure system detection and alert preferences
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Detection Settings -->
+            <div class="card-shadow bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-crosshairs mr-2"></i>Detection Settings
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="confidence_threshold" class="block text-sm font-medium text-gray-700 mb-2">
+                            Confidence Threshold
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" 
+                                   id="confidence_threshold" 
+                                   name="confidence_threshold" 
+                                   min="0.1" 
+                                   max="0.9" 
+                                   step="0.05" 
+                                   value="{{ settings.confidence_threshold }}"
+                                   class="flex-1"
+                                   oninput="updateConfidenceValue(this.value)">
+                            <span id="confidenceValue" class="text-sm font-medium text-gray-900 w-12">{{ settings.confidence_threshold|floatformat:2 }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Lower values = more sensitive, higher values = more accurate
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="alert_cooldown_seconds" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alert Cooldown (seconds)
+                        </label>
+                        <input type="number" 
+                               id="alert_cooldown_seconds" 
+                               name="alert_cooldown_seconds" 
+                               value="{{ settings.alert_cooldown_seconds }}"
+                               min="5"
+                               max="300"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                        <p class="mt-1 text-xs text-gray-500">
+                            Minimum time between consecutive alerts
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Settings -->
+            <div class="card-shadow bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-bell mr-2"></i>Alert Settings
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <label for="alert_sound_enabled" class="text-sm font-medium text-gray-900">
+                                Sound Alerts
+                            </label>
+                            <p class="text-xs text-gray-500">Play sound when detection occurs</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   id="alert_sound_enabled" 
+                                   name="alert_sound_enabled" 
+                                   class="sr-only peer"
+                                   {% if settings.alert_sound_enabled %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <label for="email_alerts_enabled" class="text-sm font-medium text-gray-900">
+                                Email Alerts
+                            </label>
+                            <p class="text-xs text-gray-500">Send email notifications</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   id="email_alerts_enabled" 
+                                   name="email_alerts_enabled" 
+                                   class="sr-only peer"
+                                   {% if settings.email_alerts_enabled %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <div id="emailSettings" class="{% if not settings.email_alerts_enabled %}hidden{% endif %}">
+                        <label for="alert_email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alert Email Address
+                        </label>
+                        <input type="email" 
+                               id="alert_email" 
+                               name="alert_email" 
+                               value="{{ settings.alert_email }}"
+                               placeholder="admin@example.com"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="card-shadow bg-white rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-server mr-2"></i>System Information
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600">Python Version:</span>
+                        <span class="float-right font-medium">3.11.x</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Django Version:</span>
+                        <span class="float-right font-medium">5.0</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">YOLOv8 Version:</span>
+                        <span class="float-right font-medium">8.1.0</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">OpenCV Version:</span>
+                        <span class="float-right font-medium">4.8.1</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">CUDA Available:</span>
+                        <span class="float-right font-medium">
+                            <i class="fas fa-times text-red-600"></i> No
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Last Updated:</span>
+                        <span class="float-right font-medium">{{ settings.updated_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between">
+                <button type="button" 
+                        onclick="resetSettings()"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-undo mr-2"></i>Reset to Defaults
+                </button>
+
+                <button type="submit" 
+                        class="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white gradient-bg hover:opacity-90">
+                    <i class="fas fa-save mr-2"></i>Save Settings
+                </button>
+            </div>
+        </form>
+
+        <!-- Danger Zone -->
+        <div class="card-shadow bg-red-50 border border-red-200 rounded-lg p-6 mt-6">
+            <h2 class="text-lg font-semibold text-red-900 mb-4">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone
+            </h2>
+            
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-red-900">Clear All Alerts</p>
+                        <p class="text-xs text-red-700">Permanently delete all alert records</p>
+                    </div>
+                    <button onclick="clearAllAlerts()" 
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">
+                        Clear Alerts
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between border-t border-red-200 pt-3">
+                    <div>
+                        <p class="text-sm font-medium text-red-900">Reset System</p>
+                        <p class="text-xs text-red-700">Reset all settings and clear data</p>
+                    </div>
+                    <button onclick="resetSystem()" 
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">
+                        Reset System
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateConfidenceValue(value) {
+    document.getElementById('confidenceValue').textContent = parseFloat(value).toFixed(2);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.getElementById('email_alerts_enabled').addEventListener('change', function() {
+    const emailSettings = document.getElementById('emailSettings');
+    if (this.checked) {
+        emailSettings.classList.remove('hidden');
+    } else {
+        emailSettings.classList.add('hidden');
+    }
+});
+
+function resetSettings() {
+    if (!confirm('Reset all settings to defaults?')) return;
+    showNotification('Settings reset', 'info');
+    location.reload();
+}
+
+function clearAllAlerts() {
+    if (!confirm('This will permanently delete ALL alerts. Continue?')) return;
+    
+    const csrftoken = getCookie('csrftoken');
+    console.log('Clearing all alerts...');
+    
+    fetch('/api/alerts/clear/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log('Clear response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Clear response data:', data);
+        showNotification('All alerts cleared', 'success');
+    })
+    .catch(error => {
+        console.error('Clear error:', error);
+        showNotification('Failed to clear alerts: ' + error.message, 'error');
+    });
+}
+
+function resetSystem() {
+    if (!confirm('This will reset the entire system. Are you absolutely sure?')) return;
+    showNotification('System reset functionality coming soon', 'info');
+}
+</script>
+{% endblock %}

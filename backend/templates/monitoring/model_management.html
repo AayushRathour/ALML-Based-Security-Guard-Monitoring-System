@@ -1,0 +1,294 @@
+<!-- backend/templates/monitoring/model_management.html -->
+{% extends 'base.html' %}
+
+{% block title %}Model Management - Guard Monitoring System{% endblock %}
+
+{% block content %}
+<div class="py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="md:flex md:items-center md:justify-between mb-6">
+            <div class="min-w-0 flex-1">
+                <h1 class="text-3xl font-bold text-gray-900">
+                    <i class="fas fa-brain mr-2"></i>Model Management
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Train and manage AI detection models
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Training Form -->
+            <div class="lg:col-span-1">
+                <div class="card-shadow bg-white rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-upload mr-2"></i>Upload Dataset
+                    </h2>
+                    
+                    <form id="trainingForm" class="space-y-4">
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Dataset (ZIP)
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-purple-500 transition">
+                                <div class="space-y-1 text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="dataset-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-purple-600 hover:text-purple-500">
+                                            <span>Upload a file</span>
+                                            <input id="dataset-upload" name="dataset" type="file" accept=".zip" class="sr-only">
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">ZIP file up to 500MB</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Model
+                            </label>
+                            <select name="model_name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                <option value="yolov8n">YOLOv8n (Nano - Fast)</option>
+                                <option value="yolov8s">YOLOv8s (Small)</option>
+                                <option value="yolov8m">YOLOv8m (Medium)</option>
+                                <option value="yolov8l">YOLOv8l (Large)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Epochs
+                            </label>
+                            <input type="number" name="epochs" value="50" min="1" max="300" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Batch Size
+                            </label>
+                            <input type="number" name="batch_size" value="8" min="1" max="64" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                        </div>
+
+                        <button type="submit" 
+                                class="w-full gradient-bg text-white font-medium py-2 px-4 rounded-lg hover:opacity-90 transition">
+                            <i class="fas fa-play mr-2"></i>Start Training
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Current Model Info -->
+                <div class="card-shadow bg-white rounded-lg p-6 mt-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2"></i>Current Model
+                    </h2>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Model:</span>
+                            <span class="font-medium">YOLOv8n</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Version:</span>
+                            <span class="font-medium">8.1.0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Parameters:</span>
+                            <span class="font-medium">3.2M</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Size:</span>
+                            <span class="font-medium">6.4 MB</span>
+                        </div>
+                    </div>
+
+                    <button class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-download mr-2"></i>Download Model
+                    </button>
+                </div>
+            </div>
+
+            <!-- Training Jobs -->
+            <div class="lg:col-span-2">
+                <div class="card-shadow bg-white rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-tasks mr-2"></i>Training Jobs
+                    </h2>
+
+                    <div class="space-y-4">
+                        {% for job in training_jobs %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <h3 class="font-medium text-gray-900">{{ job.model_name }}</h3>
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                            {% if job.status == 'completed' %}bg-green-100 text-green-800
+                                            {% elif job.status == 'running' %}bg-blue-100 text-blue-800
+                                            {% elif job.status == 'failed' %}bg-red-100 text-red-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="mt-2 text-sm text-gray-500 space-y-1">
+                                        <p><i class="fas fa-calendar mr-2"></i>Started: {{ job.created_at|date:"Y-m-d H:i" }}</p>
+                                        <p><i class="fas fa-layer-group mr-2"></i>Epochs: {{ job.epochs }} | Batch: {{ job.batch_size }}</p>
+                                    </div>
+
+                                    {% if job.status == 'running' %}
+                                    <div class="mt-3">
+                                        <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                            <span>Progress</span>
+                                            <span>{{ job.progress }}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full transition-all" style="width: {{ job.progress }}%"></div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="ml-4 flex flex-col space-y-2">
+                                    <button onclick="viewLogs({{ job.id }})" 
+                                            class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-file-alt"></i>
+                                    </button>
+                                    {% if job.status == 'running' %}
+                                    <button onclick="cancelJob({{ job.id }})" 
+                                            class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-stop-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-brain text-4xl mb-3 text-gray-400"></i>
+                            <p class="text-lg">No training jobs yet</p>
+                            <p class="text-sm mt-1">Upload a dataset to start training</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Training Guide -->
+                <div class="card-shadow bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 mt-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">
+                        <i class="fas fa-lightbulb mr-2"></i>Training Guide
+                    </h2>
+                    
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-0.5 mr-2"></i>
+                            <p>Dataset should be in YOLO format (images + labels)</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-0.5 mr-2"></i>
+                            <p>Include data.yaml with class names and paths</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-0.5 mr-2"></i>
+                            <p>Recommended: 80/20 train/val split</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mt-0.5 mr-2"></i>
+                            <p>GPU recommended for faster training</p>
+                        </div>
+                    </div>
+
+                    <a href="https://docs.ultralytics.com/datasets/detect/" 
+                       target="_blank"
+                       class="inline-flex items-center mt-4 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        View Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logs Modal -->
+<div id="logsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Training Logs</h3>
+            <button onclick="closeLogsModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="logsContent" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-auto max-h-96">
+            <pre id="logText">Loading logs...</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.getElementById('trainingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const csrftoken = getCookie('csrftoken');
+    console.log('Starting training job...');
+    
+    fetch('/api/training/start/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        body: formData
+    })
+    .then(response => {
+        console.log('Training response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Training response data:', data);
+        showNotification('Training job created', 'success');
+        setTimeout(() => location.reload(), 1000);
+    })
+    .catch(error => {
+        console.error('Training error:', error);
+        showNotification('Failed to start training: ' + error.message, 'error');
+    });
+});
+
+function viewLogs(jobId) {
+    document.getElementById('logsModal').classList.remove('hidden');
+    document.getElementById('logText').textContent = 
+        'Epoch 1/50: Training...\nLoss: 0.524\nmAP50: 0.652\n...';
+}
+
+function closeLogsModal() {
+    document.getElementById('logsModal').classList.add('hidden');
+}
+
+function cancelJob(jobId) {
+    if (!confirm('Cancel this training job?')) return;
+    showNotification('Job cancellation requested', 'info');
+}
+</script>
+{% endblock %}

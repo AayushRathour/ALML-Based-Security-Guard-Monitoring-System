@@ -1,0 +1,305 @@
+<!-- backend/templates/monitoring/help.html -->
+{% extends 'base.html' %}
+
+{% block title %}Help & Documentation - Guard Monitoring System{% endblock %}
+
+{% block content %}
+<div class="py-6">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-question-circle mr-2"></i>Help & Documentation
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Quick start guide and troubleshooting
+            </p>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="card-shadow bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-rocket mr-2"></i>Quick Start Guide
+            </h2>
+
+            <div class="space-y-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-semibold">
+                            1
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-medium text-gray-900">Installation</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Create a virtual environment and install dependencies:
+                        </p>
+                        <div class="mt-2 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                            <code>python -m venv venv<br>
+venv\Scripts\activate  # Windows<br>
+pip install -r requirements.txt</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-semibold">
+                            2
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-medium text-gray-900">Setup Database</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Run migrations and create admin user:
+                        </p>
+                        <div class="mt-2 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                            <code>cd backend<br>
+python manage.py migrate<br>
+python manage.py createsuperuser</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-semibold">
+                            3
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-medium text-gray-900">Start Server</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Launch the Django development server:
+                        </p>
+                        <div class="mt-2 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
+                            <code>python manage.py runserver</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 font-semibold">
+                            4
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-medium text-gray-900">Access Dashboard</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Open your browser and navigate to:
+                        </p>
+                        <div class="mt-2">
+                            <a href="http://127.0.0.1:8000" 
+                               class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                http://127.0.0.1:8000
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="card-shadow bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-star mr-2"></i>Features Overview
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-video text-blue-600 text-xl mr-3"></i>
+                        <h3 class="font-medium text-gray-900">Live Monitoring</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Real-time video feed with AI-powered person detection using YOLOv8
+                    </p>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-bell text-red-600 text-xl mr-3"></i>
+                        <h3 class="font-medium text-gray-900">Smart Alerts</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Automated alerts when persons are detected, with confidence scoring
+                    </p>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-brain text-purple-600 text-xl mr-3"></i>
+                        <h3 class="font-medium text-gray-900">Model Training</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Train custom models with your own datasets for improved accuracy
+                    </p>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-chart-line text-green-600 text-xl mr-3"></i>
+                        <h3 class="font-medium text-gray-900">Analytics</h3>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Comprehensive logs and statistics for all detection events
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="card-shadow bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-wrench mr-2"></i>Troubleshooting
+            </h2>
+
+            <div class="space-y-4">
+                <div class="border-l-4 border-yellow-500 bg-yellow-50 p-4">
+                    <h3 class="font-medium text-yellow-900 mb-1">Webcam not detected</h3>
+                    <p class="text-sm text-yellow-800">
+                        Ensure your webcam is properly connected and not being used by another application. Check camera permissions in your OS settings.
+                    </p>
+                </div>
+
+                <div class="border-l-4 border-blue-500 bg-blue-50 p-4">
+                    <h3 class="font-medium text-blue-900 mb-1">Slow detection performance</h3>
+                    <p class="text-sm text-blue-800">
+                        For CPU-only systems, use YOLOv8n (nano) model. Consider installing CUDA for GPU acceleration or reducing the confidence threshold.
+                    </p>
+                </div>
+
+                <div class="border-l-4 border-red-500 bg-red-50 p-4">
+                    <h3 class="font-medium text-red-900 mb-1">Model download errors</h3>
+                    <p class="text-sm text-red-800">
+                        YOLOv8 models auto-download on first use. Ensure you have internet connectivity. Models are cached in <code class="bg-red-100 px-1 rounded">ml/model_weights/</code>
+                    </p>
+                </div>
+
+                <div class="border-l-4 border-green-500 bg-green-50 p-4">
+                    <h3 class="font-medium text-green-900 mb-1">Video stream not showing</h3>
+                    <p class="text-sm text-green-800">
+                        Click "Start" button first to begin detection. Check that the detection process is running without errors in the terminal.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="card-shadow bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-cogs mr-2"></i>Configuration
+            </h2>
+
+            <div class="space-y-3 text-sm">
+                <div>
+                    <h3 class="font-medium text-gray-900 mb-1">Environment Variables</h3>
+                    <p class="text-gray-600">
+                        Create a <code class="bg-gray-100 px-1 rounded">.env</code> file in the project root:
+                    </p>
+                    <div class="mt-2 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto">
+                        <code>SECRET_KEY=your-secret-key<br>
+DEBUG=True<br>
+CONFIDENCE_THRESHOLD=0.4<br>
+ALERT_SOUND_ENABLED=True</code>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-medium text-gray-900 mb-1 mt-4">CUDA Setup (Optional)</h3>
+                    <p class="text-gray-600">
+                        For GPU acceleration, install CUDA-enabled PyTorch:
+                    </p>
+                    <div class="mt-2 bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto">
+                        <code>pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="card-shadow bg-white rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-question mr-2"></i>Frequently Asked Questions
+            </h2>
+
+            <div class="space-y-4">
+                <details class="border border-gray-200 rounded-lg p-4">
+                    <summary class="font-medium text-gray-900 cursor-pointer">
+                        What cameras are supported?
+                    </summary>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Any USB webcam or built-in laptop camera supported by OpenCV. IP cameras can be configured by modifying the video source in <code class="bg-gray-100 px-1 rounded">ml/yolo_detect.py</code>.
+                    </p>
+                </details>
+
+                <details class="border border-gray-200 rounded-lg p-4">
+                    <summary class="font-medium text-gray-900 cursor-pointer">
+                        Can I detect objects other than people?
+                    </summary>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Yes! YOLOv8 supports 80 COCO classes by default. Modify the detection filter in the code or train a custom model for specific objects.
+                    </p>
+                </details>
+
+                <details class="border border-gray-200 rounded-lg p-4">
+                    <summary class="font-medium text-gray-900 cursor-pointer">
+                        How do I improve detection accuracy?
+                    </summary>
+                    <p class="mt-2 text-sm text-gray-600">
+                        1) Use a larger model (yolov8m/l), 2) Train on custom dataset specific to your environment, 3) Adjust confidence threshold, 4) Ensure good lighting conditions.
+                    </p>
+                </details>
+
+                <details class="border border-gray-200 rounded-lg p-4">
+                    <summary class="font-medium text-gray-900 cursor-pointer">
+                        Is this suitable for production use?
+                    </summary>
+                    <p class="mt-2 text-sm text-gray-600">
+                        This is a development/prototype system. For production, add: authentication hardening, HTTPS, database backups, Celery for background tasks, proper logging, and monitoring.
+                    </p>
+                </details>
+            </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="card-shadow bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-book mr-2"></i>Additional Resources
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <a href="https://docs.ultralytics.com/" 
+                   target="_blank"
+                   class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition">
+                    <i class="fas fa-external-link-alt text-blue-600 mr-3"></i>
+                    <span class="text-sm font-medium text-gray-900">YOLOv8 Documentation</span>
+                </a>
+
+                <a href="https://docs.djangoproject.com/" 
+                   target="_blank"
+                   class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition">
+                    <i class="fas fa-external-link-alt text-green-600 mr-3"></i>
+                    <span class="text-sm font-medium text-gray-900">Django Documentation</span>
+                </a>
+
+                <a href="https://opencv.org/opencv-documentation/" 
+                   target="_blank"
+                   class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition">
+                    <i class="fas fa-external-link-alt text-red-600 mr-3"></i>
+                    <span class="text-sm font-medium text-gray-900">OpenCV Documentation</span>
+                </a>
+
+                <a href="https://github.com/ultralytics/ultralytics" 
+                   target="_blank"
+                   class="flex items-center p-3 bg-white rounded-lg hover:shadow-md transition">
+                    <i class="fab fa-github text-gray-900 mr-3"></i>
+                    <span class="text-sm font-medium text-gray-900">Ultralytics GitHub</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

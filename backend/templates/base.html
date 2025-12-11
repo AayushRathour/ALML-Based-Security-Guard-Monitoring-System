@@ -1,0 +1,185 @@
+<!-- backend/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Guard Monitoring System{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        
+        .alert-badge {
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-25%);
+                animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+            }
+            50% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        {% if user.is_authenticated %}
+        <!-- Navigation -->
+        <nav class="gradient-bg shadow-lg">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-shield-halved text-white text-2xl"></i>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-home mr-2"></i>Dashboard
+                                </a>
+                                <a href="{% url 'live_monitor' %}" class="{% if request.resolver_match.url_name == 'live_monitor' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-video mr-2"></i>Live Monitor
+                                </a>
+                                <a href="{% url 'alerts_log' %}" class="{% if request.resolver_match.url_name == 'alerts_log' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-bell mr-2"></i>Alerts
+                                </a>
+                                <a href="{% url 'model_management' %}" class="{% if request.resolver_match.url_name == 'model_management' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-brain mr-2"></i>Model Training
+                                </a>
+                                <a href="{% url 'settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-cog mr-2"></i>Settings
+                                </a>
+                                <a href="{% url 'authorized_persons' %}" class="{% if request.resolver_match.url_name == 'authorized_persons' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-id-card mr-2"></i>Authorized Persons
+                                </a>
+                                <a href="{% url 'help' %}" class="{% if request.resolver_match.url_name == 'help' %}bg-white bg-opacity-20{% endif %} text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                    <i class="fas fa-question-circle mr-2"></i>Help
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'admin_panel' %}" class="{% if request.resolver_match.url_name == 'admin_panel' %}bg-yellow-500{% endif %} text-white hover:bg-yellow-500 px-3 py-2 rounded-md text-sm font-medium transition border border-yellow-400">
+                                    <i class="fas fa-users-cog mr-2"></i>Admin Panel
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-4 flex items-center md:ml-6">
+                            <span class="text-white text-sm mr-4">
+                                <i class="fas fa-user-circle mr-2"></i>{{ user.username }}
+                            </span>
+                            <a href="{% url 'logout' %}" class="text-white hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        {% endif %}
+
+        <!-- Page Content -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Global utility functions
+        function showNotification(message, type = 'info') {
+            const colors = {
+                'success': 'bg-green-500',
+                'error': 'bg-red-500',
+                'info': 'bg-blue-500',
+                'warning': 'bg-yellow-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all`;
+            notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Auto-refresh status
+        function refreshStatus() {
+            fetch('/api/status/')
+                .then(response => response.json())
+                .then(data => {
+                    const statusIndicator = document.getElementById('status-indicator');
+                    if (statusIndicator) {
+                        if (data.detection_enabled) {
+                            statusIndicator.className = 'flex items-center text-green-600';
+                            statusIndicator.innerHTML = '<i class="fas fa-circle text-green-500 mr-2 pulse-animation"></i>Active';
+                        } else {
+                            statusIndicator.className = 'flex items-center text-gray-600';
+                            statusIndicator.innerHTML = '<i class="fas fa-circle text-gray-400 mr-2"></i>Inactive';
+                        }
+                    }
+                })
+                .catch(error => console.error('Status refresh error:', error));
+        }
+
+        // Refresh every 5 seconds
+        if (document.querySelector('[data-auto-refresh="true"]')) {
+            setInterval(refreshStatus, 5000);
+            refreshStatus();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

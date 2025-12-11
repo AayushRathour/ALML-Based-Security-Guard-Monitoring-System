@@ -1,0 +1,369 @@
+{% extends 'monitoring/base.html' %}
+{% load static %}
+
+{% block title %}Admin Panel - User Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-card {
+        transition: all 0.3s ease;
+    }
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .badge-admin {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .badge-staff {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    .badge-user {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    .badge-active {
+        background-color: #10b981;
+        color: white;
+    }
+    .badge-inactive {
+        background-color: #ef4444;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-users-cog mr-3"></i>User Management
+            </h1>
+            <p class="text-gray-300">Manage system users and permissions</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm">Total Users</p>
+                        <h3 class="text-3xl font-bold">{{ total_users }}</h3>
+                    </div>
+                    <i class="fas fa-users text-4xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-100 text-sm">Administrators</p>
+                        <h3 class="text-3xl font-bold">{{ admin_count }}</h3>
+                    </div>
+                    <i class="fas fa-user-shield text-4xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm">Active Users</p>
+                        <h3 class="text-3xl font-bold">{{ active_users }}</h3>
+                    </div>
+                    <i class="fas fa-user-check text-4xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-red-100 text-sm">Inactive Users</p>
+                        <h3 class="text-3xl font-bold">{{ inactive_users }}</h3>
+                    </div>
+                    <i class="fas fa-user-slash text-4xl opacity-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-500{% elif message.tags == 'success' %}bg-green-500{% else %}bg-blue-500{% endif %} text-white">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Add New User Button -->
+        <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-white">
+                <i class="fas fa-list mr-2"></i>All Users
+            </h2>
+            <button onclick="document.getElementById('addUserModal').classList.remove('hidden')"
+                    class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition shadow-lg">
+                <i class="fas fa-user-plus mr-2"></i>Add New User
+            </button>
+        </div>
+
+        <!-- Users Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for user in users %}
+            <div class="user-card bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-6 border border-white border-opacity-20">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold text-lg">{{ user.get_full_name|default:user.username }}</h3>
+                            <p class="text-gray-300 text-sm">@{{ user.username }}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-1">
+                        {% if user.is_superuser %}
+                            <span class="badge badge-admin">
+                                <i class="fas fa-crown mr-1"></i>Admin
+                            </span>
+                        {% elif user.is_staff %}
+                            <span class="badge badge-staff">
+                                <i class="fas fa-user-tie mr-1"></i>Staff
+                            </span>
+                        {% else %}
+                            <span class="badge badge-user">
+                                <i class="fas fa-user mr-1"></i>User
+                            </span>
+                        {% endif %}
+                        {% if user.is_active %}
+                            <span class="badge badge-active">
+                                <i class="fas fa-check mr-1"></i>Active
+                            </span>
+                        {% else %}
+                            <span class="badge badge-inactive">
+                                <i class="fas fa-times mr-1"></i>Inactive
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="space-y-2 mb-4 text-sm text-gray-300">
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope w-5 text-blue-400"></i>
+                        <span>{{ user.email|default:"No email" }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-calendar w-5 text-purple-400"></i>
+                        <span>Joined: {{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-clock w-5 text-green-400"></i>
+                        <span>Last login: {{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</span>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.email }}', '{{ user.first_name }}', '{{ user.last_name }}', {{ user.is_staff|yesno:"true,false" }}, {{ user.is_active|yesno:"true,false" }})"
+                            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                    {% if user.id != request.user.id %}
+                    <form method="post" action="{% url 'admin_panel' %}" class="flex-1" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition text-sm">
+                            <i class="fas fa-trash mr-1"></i>Delete
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center text-gray-400 py-12">
+                <i class="fas fa-users text-6xl mb-4 opacity-50"></i>
+                <p class="text-xl">No users found</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="addUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-xl max-w-2xl w-full p-8 relative">
+        <button onclick="document.getElementById('addUserModal').classList.add('hidden')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <h2 class="text-2xl font-bold text-white mb-6">
+            <i class="fas fa-user-plus mr-2"></i>Add New User
+        </h2>
+        
+        <form method="post" action="{% url 'admin_panel' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Username *</label>
+                    <input type="text" name="username" required
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Email *</label>
+                    <input type="email" name="email" required
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">First Name</label>
+                    <input type="text" name="first_name"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Last Name</label>
+                    <input type="text" name="last_name"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Password *</label>
+                    <input type="password" name="password" required
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Confirm Password *</label>
+                    <input type="password" name="password2" required
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex space-x-4">
+                <label class="flex items-center text-white">
+                    <input type="checkbox" name="is_staff" class="mr-2 w-5 h-5">
+                    <span><i class="fas fa-user-tie mr-1"></i>Staff Status</span>
+                </label>
+                
+                <label class="flex items-center text-white">
+                    <input type="checkbox" name="is_active" checked class="mr-2 w-5 h-5">
+                    <span><i class="fas fa-user-check mr-1"></i>Active</span>
+                </label>
+            </div>
+            
+            <div class="flex space-x-4 pt-4">
+                <button type="submit"
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                    <i class="fas fa-user-plus mr-2"></i>Create User
+                </button>
+                <button type="button" onclick="document.getElementById('addUserModal').classList.add('hidden')"
+                        class="flex-1 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-xl max-w-2xl w-full p-8 relative">
+        <button onclick="document.getElementById('editUserModal').classList.add('hidden')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <h2 class="text-2xl font-bold text-white mb-6">
+            <i class="fas fa-user-edit mr-2"></i>Edit User
+        </h2>
+        
+        <form method="post" action="{% url 'admin_panel' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="user_id" id="edit_user_id">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Username</label>
+                    <input type="text" name="username" id="edit_username" readonly
+                           class="w-full px-4 py-2 bg-gray-600 border border-gray-600 rounded-lg text-gray-400 cursor-not-allowed">
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Email</label>
+                    <input type="email" name="email" id="edit_email"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">First Name</label>
+                    <input type="text" name="first_name" id="edit_first_name"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Last Name</label>
+                    <input type="text" name="last_name" id="edit_last_name"
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex space-x-4">
+                <label class="flex items-center text-white">
+                    <input type="checkbox" name="is_staff" id="edit_is_staff" class="mr-2 w-5 h-5">
+                    <span><i class="fas fa-user-tie mr-1"></i>Staff Status</span>
+                </label>
+                
+                <label class="flex items-center text-white">
+                    <input type="checkbox" name="is_active" id="edit_is_active" class="mr-2 w-5 h-5">
+                    <span><i class="fas fa-user-check mr-1"></i>Active</span>
+                </label>
+            </div>
+            
+            <div class="flex space-x-4 pt-4">
+                <button type="submit"
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                    <i class="fas fa-save mr-2"></i>Save Changes
+                </button>
+                <button type="button" onclick="document.getElementById('editUserModal').classList.add('hidden')"
+                        class="flex-1 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editUser(id, username, email, firstName, lastName, isStaff, isActive) {
+    document.getElementById('edit_user_id').value = id;
+    document.getElementById('edit_username').value = username;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_first_name').value = firstName;
+    document.getElementById('edit_last_name').value = lastName;
+    document.getElementById('edit_is_staff').checked = isStaff;
+    document.getElementById('edit_is_active').checked = isActive;
+    document.getElementById('editUserModal').classList.remove('hidden');
+}
+</script>
+{% endblock %}
