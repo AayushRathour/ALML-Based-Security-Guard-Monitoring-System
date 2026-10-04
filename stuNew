@@ -1,49 +1,3 @@
-
-public class Ticket {
-
-    private int ticketid;
-    private int price;
-    private static int availableTickets;
-
-    public int getTicketid() {
-        return ticketid;
-    }
-
-    public void setTicketid(int ticketid) {
-        this.ticketid = ticketid;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public static int getAvailableTickets() {
-        return availableTickets;
-    }
-
-    public static void setAvailableTickets(int availableTickets) {
-        Ticket.availableTickets = availableTickets;
-    }
-
-    public int calculateTicketCost(int nooftickets) {
-
-        if (availableTickets >= nooftickets && availableTickets >= 0) {
-            int totalAmount = nooftickets * price;
-            availableTickets = availableTickets - nooftickets;
-            return totalAmount;
-        }
-
-        return -1;
-    }
-}
-
-
-
-
 import java.util.Scanner;
 
 public class UserInterface {
@@ -79,16 +33,17 @@ public class UserInterface {
             ticket.setTicketid(ticketid);
             ticket.setPrice(price);
 
-            int availableBeforeBooking = Ticket.getAvailableTickets();
-
             int totalAmount = ticket.calculateTicketCost(noOfTickets);
 
             if (totalAmount == -1) {
                 System.out.println("Tickets are not available");
             } else {
-                System.out.println("Available tickets: " + availableBeforeBooking);
+                System.out.println("Available tickets: " 
+                        + Ticket.getAvailableTickets() + noOfTickets);
+
                 System.out.println("Total amount: " + totalAmount);
-                System.out.println("Available ticket after booking: "
+
+                System.out.println("Available ticket after booking: " 
                         + Ticket.getAvailableTickets());
             }
 
@@ -100,4 +55,3 @@ public class UserInterface {
         sc.close();
     }
 }
-
