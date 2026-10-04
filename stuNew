@@ -1,1 +1,103 @@
 
+public class Ticket {
+
+    private int ticketid;
+    private int price;
+    private static int availableTickets;
+
+    public int getTicketid() {
+        return ticketid;
+    }
+
+    public void setTicketid(int ticketid) {
+        this.ticketid = ticketid;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public static int getAvailableTickets() {
+        return availableTickets;
+    }
+
+    public static void setAvailableTickets(int availableTickets) {
+        Ticket.availableTickets = availableTickets;
+    }
+
+    public int calculateTicketCost(int nooftickets) {
+
+        if (availableTickets >= nooftickets && availableTickets >= 0) {
+            int totalAmount = nooftickets * price;
+            availableTickets = availableTickets - nooftickets;
+            return totalAmount;
+        }
+
+        return -1;
+    }
+}
+
+
+
+
+import java.util.Scanner;
+
+public class UserInterface {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Enter movie name");
+        String movieName = sc.nextLine();
+
+        System.out.println("Enter no of bookings");
+        int noOfBookings = sc.nextInt();
+
+        System.out.println("Enter the available tickets");
+        int availableTickets = sc.nextInt();
+
+        Ticket.setAvailableTickets(availableTickets);
+
+        for (int i = 0; i < noOfBookings; i++) {
+
+            System.out.println("Enter the ticketid");
+            int ticketid = sc.nextInt();
+
+            System.out.println("Enter the price");
+            int price = sc.nextInt();
+
+            System.out.println("Enter the no of tickets");
+            int noOfTickets = sc.nextInt();
+
+            Ticket ticket = new Ticket();
+
+            ticket.setTicketid(ticketid);
+            ticket.setPrice(price);
+
+            int availableBeforeBooking = Ticket.getAvailableTickets();
+
+            int totalAmount = ticket.calculateTicketCost(noOfTickets);
+
+            if (totalAmount == -1) {
+                System.out.println("Tickets are not available");
+            } else {
+                System.out.println("Available tickets: " + availableBeforeBooking);
+                System.out.println("Total amount: " + totalAmount);
+                System.out.println("Available ticket after booking: "
+                        + Ticket.getAvailableTickets());
+            }
+
+            if (Ticket.getAvailableTickets() == 0) {
+                System.out.println("House full");
+            }
+        }
+
+        sc.close();
+    }
+}
+
