@@ -1,35 +1,30 @@
-import java.util.Scanner;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 
 public class UserInterface {
-
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Enter the date of joining");
-        String joiningDate = sc.nextLine();
+        System.out.println("Enter the word");
+        String word = sc.nextLine();
 
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            sdf.setLenient(false);
+        System.out.println("Enter the two indices");
+        int index1 = sc.nextInt();
+        int index2 = sc.nextInt();
 
-            Date d1 = sdf.parse(joiningDate);
-
-            // Current date as given in the question
-            Date d2 = sdf.parse("15/12/2020");
-
-            // Difference in milliseconds
-            long difference = d2.getTime() - d1.getTime();
-
-            // Convert milliseconds to years
-            long years = difference / (1000L * 60 * 60 * 24 * 365);
-
-            System.out.println(years + " years of experience");
-
-        } catch (Exception e) {
-            System.out.println("Invalid date");
+        if (index1 > word.length()) {
+            System.out.println(index1 + " is greater than the word length");
         }
+        else if (index2 > word.length()) {
+            System.out.println(index2 + " is greater than the word length");
+        }
+        else if (index1 >= index2) {
+            System.out.println("Index2 should be greater than Index1");
+        }
+        else {
+            System.out.println(word.substring(index1, index2));
+        }
+
+        sc.close();
     }
 }
