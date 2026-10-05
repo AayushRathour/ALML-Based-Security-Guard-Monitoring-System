@@ -13,35 +13,31 @@ public class UserInterface {
         System.out.println("Enter the Manufacturing Date");
         String date = sc.nextLine();
 
-        System.out.println("Enter the Month");
-        int month = sc.nextInt();
-
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         sdf.setLenient(false);
 
+        Date d;
+
         try {
-            // Convert String to Date
-            Date d = sdf.parse(date);
-
-            // Create Calendar instance
-            Calendar c = Calendar.getInstance();
-
-            // Set manufacturing date
-            c.setTime(d);
-
-            // Add validity months
-            c.add(Calendar.MONTH, month);
-
-            // Convert Calendar back to Date
-            Date expiryDate = c.getTime();
-
-            // Convert Date to String
-            String result = sdf.format(expiryDate);
-
-            System.out.println(result + " is the expiry date");
-
+            d = sdf.parse(date);
         } catch (ParseException e) {
             System.out.println(date + " is not a valid date");
+            return;
         }
+
+        // Only ask for month if date is valid
+        System.out.println("Enter the Month");
+        int month = sc.nextInt();
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+
+        c.add(Calendar.MONTH, month);
+
+        Date expiryDate = c.getTime();
+
+        String result = sdf.format(expiryDate);
+
+        System.out.println(result + " is the expiry date");
     }
 }
