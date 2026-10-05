@@ -12,14 +12,14 @@ public class UserInterface {
         int index1 = sc.nextInt();
         int index2 = sc.nextInt();
 
-        if (index1 < 0 || index1 > word.length()) {
-            System.out.println(index1 + " is greater than the word length");
+        if (index1 >= index2) {
+            System.out.println("Index2 should be greater than Index1");
         }
         else if (index2 > word.length()) {
             System.out.println(index2 + " is greater than the word length");
         }
-        else if (index1 >= index2) {
-            System.out.println("Index2 should be greater than Index1");
+        else if (index1 > word.length()) {
+            System.out.println(index1 + " is greater than the word length");
         }
         else {
             System.out.println(word.substring(index1, index2));
