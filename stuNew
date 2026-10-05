@@ -18,24 +18,40 @@ public class UserInterface {
 
         Date d;
 
+        // First validate the date
         try {
+
+            // Ensure exact format dd/MM/yyyy
+            if (!date.matches("\\d{2}/\\d{2}/\\d{4}")) {
+                System.out.println(date + " is not a valid date");
+                return;
+            }
+
             d = sdf.parse(date);
+
         } catch (ParseException e) {
+
             System.out.println(date + " is not a valid date");
             return;
         }
 
-        // Only ask for month if date is valid
+        // Ask for month ONLY if date is valid
         System.out.println("Enter the Month");
         int month = sc.nextInt();
 
+        // Create Calendar
         Calendar c = Calendar.getInstance();
+
+        // Set manufacturing date
         c.setTime(d);
 
+        // Add validity months
         c.add(Calendar.MONTH, month);
 
+        // Convert Calendar to Date
         Date expiryDate = c.getTime();
 
+        // Convert Date to String
         String result = sdf.format(expiryDate);
 
         System.out.println(result + " is the expiry date");
