@@ -1,1 +1,101 @@
+import java.util.*;
 
+public class Main {
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        String input = sc.nextLine();
+
+        // 1. Input validation
+        if (!input.matches("[a-zA-Z]+")) {
+            System.out.println(input + " is an invalid input");
+            return;
+        }
+
+        // 2. Convert to uppercase
+        input = input.toUpperCase();
+
+        // 3. Count frequency of each character
+        int[] freq = new int[26];
+
+        for (int i = 0; i < input.length(); i++) {
+            freq[input.charAt(i) - 'A']++;
+        }
+
+        // 4. Get unique characters in their first-appearance order
+        StringBuilder unique = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+
+            if (unique.indexOf(String.valueOf(ch)) == -1) {
+                unique.append(ch);
+            }
+        }
+
+        // 5. Build encrypted string
+        StringBuilder encrypted = new StringBuilder();
+
+        // Group 1: even frequency
+        for (int i = 0; i < unique.length(); i++) {
+            char ch = unique.charAt(i);
+
+            if (freq[ch - 'A'] % 2 == 0) {
+                encrypted.append(ch);
+            }
+        }
+
+        // Group 2: odd frequency
+        for (int i = 0; i < unique.length(); i++) {
+            char ch = unique.charAt(i);
+
+            if (freq[ch - 'A'] % 2 != 0) {
+                encrypted.append(ch);
+            }
+        }
+
+        // 6. Append remaining occurrences
+        // First occurrence of every character has already been used.
+        for (int i = 0; i < unique.length(); i++) {
+            char ch = unique.charAt(i);
+            int remaining = freq[ch - 'A'] - 1;
+
+            for (int j = 0; j < remaining; j++) {
+                encrypted.append(ch);
+            }
+        }
+
+        // 7. Count characters appearing exactly once
+        int singleCount = 0;
+
+        for (int i = 0; i < unique.length(); i++) {
+            char ch = unique.charAt(i);
+
+            if (freq[ch - 'A'] == 1) {
+                singleCount++;
+            }
+        }
+
+        // 8. Insert single-occurrence count at the center
+        if (singleCount > 0) {
+
+            int length = encrypted.length();
+
+            int position;
+
+            if (length % 2 == 0) {
+                // Even length -> after left-middle character
+                position = length / 2;
+            } else {
+                // Odd length -> after middle character
+                position = length / 2 + 1;
+            }
+
+            encrypted.insert(position, singleCount);
+        }
+
+        // 9. Output
+        System.out.println("Encrypted output: " + encrypted);
+    }
+}
