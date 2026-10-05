@@ -1,5 +1,4 @@
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 public class UserInterface {
 
@@ -7,41 +6,73 @@ public class UserInterface {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Enter the array size");
+        System.out.println("Enter the first array size ");
+        int size1 = sc.nextInt();
 
-        int size = sc.nextInt();
-
-        if (size <= 0) {
-            System.out.println(size + " is an invalid array size");
+        if (size1 <= 0) {
+            System.out.println(size1 + " is an invalid array size");
             return;
         }
 
-        if (size % 2 != 0) {
-            System.out.println(size + " is an odd number.Please enter even number");
+        System.out.println("Enter the numbers");
+
+        int[] arr1 = new int[size1];
+
+        for (int i = 0; i < size1; i++) {
+            arr1[i] = sc.nextInt();
+        }
+
+        System.out.println("Enter the second array size ");
+        int size2 = sc.nextInt();
+
+        if (size2 <= 0) {
+            System.out.println(size2 + " is an invalid array size");
             return;
         }
 
-        System.out.println("Enter the number");
-
-        int[] num = new int[size];
-
-        for (int i = 0; i < size; i++) {
-            num[i] = sc.nextInt();
+        if (size2 > size1) {
+            System.out.println(size2 +
+                    " is an invalid size as it is greater than first array size " +
+                    size1);
+            return;
         }
 
-        Arrays.sort(num);
+        System.out.println("Enter the numbers");
 
-        int maxSum = Integer.MIN_VALUE;
+        int[] arr2 = new int[size2];
 
-        for (int i = 0; i < size / 2; i++) {
-            int sum = num[i] + num[size - 1 - i];
+        for (int i = 0; i < size2; i++) {
+            arr2[i] = sc.nextInt();
+        }
 
-            if (sum > maxSum) {
-                maxSum = sum;
+        boolean isSubset = true;
+
+        // Check whether every element of arr2 exists in arr1
+        for (int i = 0; i < size2; i++) {
+
+            boolean found = false;
+
+            for (int j = 0; j < size1; j++) {
+
+                if (arr2[i] == arr1[j]) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                isSubset = false;
+                break;
             }
         }
 
-        System.out.println("The maximum number is " + maxSum);
+        if (isSubset) {
+            System.out.println("Array2 of size " + size2 +
+                    " is a subset of array1");
+        } else {
+            System.out.println("Array2 of size " + size2 +
+                    " is not a subset of array1");
+        }
 
         sc.close();
     }
