@@ -1,56 +1,89 @@
-System.out.println("Enter the array size");
-int size = sc.nextInt();
+import java.util.*;
 
-if (size < 1 || size > 5) {
-    System.out.println(size + " is an invalid array size");
-    return;
-}
+public class UserInterface {
 
-System.out.println("Enter the numbers");
+    public static void main(String[] args) {
 
-int[] arr = new int[size];
+        Scanner sc = new Scanner(System.in);
 
-for (int i = 0; i < size; i++) {
-    arr[i] = sc.nextInt();
+        System.out.println("Enter the array size");
+        int size = sc.nextInt();
 
-    if (arr[i] <= 0 || arr[i] >= 100) {
-        System.out.println(arr[i] + " is an invalid input");
-        return;
-    }
-}
+        if (size < 1 || size > 5) {
+            System.out.println(size + " is an invalid array size");
+            return;
+        }
 
-int count = 0;
+        System.out.println("Enter the numbers");
 
-for (int n : arr) {
+        int[] arr = new int[size];
 
-    int sum = 0;
-    int prime = 2;
+        for (int i = 0; i < size; i++) {
+            arr[i] = sc.nextInt();
 
-    while (sum < n) {
-
-        boolean isPrime = true;
-
-        for (int j = 2; j * j <= prime; j++) {
-            if (prime % j == 0) {
-                isPrime = false;
-                break;
+            if (arr[i] <= 0 || arr[i] >= 100) {
+                System.out.println(arr[i] + " is an invalid input");
+                return;
             }
         }
 
-        if (isPrime) {
-            sum += prime;
+        ArrayList<Integer> result = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+
+            int n = arr[i];
+
+            // Number itself must be prime
+            if (!isPrime(n)) {
+                continue;
+            }
+
+            int sum = 0;
+
+            for (int j = 2; j < n; j++) {
+
+                if (isPrime(j)) {
+                    sum += j;
+                }
+
+                if (sum == n) {
+                    result.add(n);
+                    break;
+                }
+
+                if (sum > n) {
+                    break;
+                }
+            }
         }
 
-        if (sum == n) {
-            System.out.println(n);
-            count++;
-            break;
-        }
+        if (result.size() != 0) {
 
-        prime++;
+            System.out.println("The sum of prime numbers is");
+
+            for (int n : result) {
+                System.out.println(n);
+            }
+
+        } else {
+
+            System.out.println(
+                "The " + size + " numbers are not sum of prime numbers"
+            );
+        }
     }
-}
 
-if (count == 0) {
-    System.out.println("The " + size + " numbers are not sum of prime numbers");
+    public static boolean isPrime(int n) {
+
+        if (n < 2)
+            return false;
+
+        for (int i = 2; i * i <= n; i++) {
+
+            if (n % i == 0)
+                return false;
+        }
+
+        return true;
+    }
 }
