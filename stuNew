@@ -6,56 +6,76 @@ public class UserInterface {
 
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Enter the number of chances");
-        int chances = sc.nextInt();
+        System.out.println("Enter the size of first array");
+        int size1 = sc.nextInt();
 
-        if (chances < 1 || chances > 5) {
-            System.out.println("Your chance " + chances + " is out of range(1-5)");
+        if (size1 <= 0) {
+            System.out.println(size1 + " is an invalid array size");
             return;
         }
 
-        System.out.println("Enter the numbers");
+        System.out.println("Enter the array elements");
+
+        int[] arr1 = new int[size1];
+
+        for (int i = 0; i < size1; i++) {
+            arr1[i] = sc.nextInt();
+
+            if (arr1[i] < 0) {
+                System.out.println(arr1[i] + " is an invalid input");
+                return;
+            }
+        }
+
+        System.out.println("Enter the size of second array");
+        int size2 = sc.nextInt();
+
+        if (size2 <= 0) {
+            System.out.println(size2 + " is an invalid array size");
+            return;
+        }
+
+        if (size1 != size2) {
+            System.out.println("Both array size is different");
+            return;
+        }
+
+        System.out.println("Enter the array elements");
+
+        int[] arr2 = new int[size2];
+
+        for (int i = 0; i < size2; i++) {
+            arr2[i] = sc.nextInt();
+
+            if (arr2[i] < 0) {
+                System.out.println(arr2[i] + " is an invalid input");
+                return;
+            }
+        }
+
+        int[] arr3 = new int[size1];
+
+        for (int i = 0; i < size1; i++) {
+            arr3[i] = arr1[i] + arr2[i];
+        }
 
         int sum = 0;
 
-        for (int i = 0; i < chances; i++) {
-
-            int num1 = sc.nextInt();
-
-            if (num1 <= 0 || num1 >= 10) {
-                System.out.println(num1 + " is an invalid number");
-                return;
-            }
-
-            sum += num1;
-
-            int num2 = sc.nextInt();
-
-            if (num2 <= 0 || num2 >= 10) {
-                System.out.println(num2 + " is an invalid number");
-                return;
-            }
-
-            sum += num2;
+        for (int i = 0; i < size1; i++) {
+            sum += arr3[i] % 10;
         }
 
-        boolean prime = true;
+        boolean prime = sum > 1;
 
-        if (sum < 2) {
-            prime = false;
-        } else {
-            for (int i = 2; i <= Math.sqrt(sum); i++) {
-                if (sum % i == 0) {
-                    prime = false;
-                    break;
-                }
+        for (int i = 2; i * i <= sum; i++) {
+            if (sum % i == 0) {
+                prime = false;
+                break;
             }
         }
 
-        if (prime) {
-            System.out.println("The sum " + sum + " is a prime number.You won the game");
-        } else {
-            System.out.println("The sum " + sum + " is not a prime number.Better luck next time");
-        }
+        System.out.println(sum + (prime
+                ? " is a prime number"
+                : " is not a prime number"));
     }
 }
