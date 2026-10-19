@@ -1,95 +1,71 @@
-package com.capico.service;
+package com.capico.controller;
 
 import java.util.List;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.capico.dto.RegisterRequest;
-import com.capico.entity.Role;
 import com.capico.entity.User;
-import com.capico.entity.UserStatus;
-import com.capico.exception.DuplicateEmailException;
-import com.capico.exception.ResourceNotFoundException;
-import com.capico.repository.UserRepository;
+import com.capico.service.UserService;
 
-// Contains business logic for user registration and CRUD operations.
-@Service
-public class UserService {
+import jakarta.validation.Valid;
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+// Exposes REST endpoints for user management.
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
 
-    // Injects the repository and password encoder.
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    private final UserService userService;
+
+    // Injects the service that handles user business logic.
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    // Registers a user with a unique email and encoded password.
-    public User createUser(RegisterRequest request) {
+    // Registers a user and returns HTTP 201 Created.
+    @PostMapping
+    public ResponseEntity<User> createUser(
+            @Valid @RequestBody RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already registered");
-        }
+        User savedUser = userService.createUser(request);
 
-        User user = new User();
-
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setMobileNumber(request.getMobileNumber());
-        user.setGender(request.getGender());
-        user.setCity(request.getCity());
-        user.setState(request.getState());
-        user.setCountry(request.getCountry());
-
-        // Clients cannot assign themselves the ADMIN role.
-        user.setRole(Role.USER);
-        user.setStatus(UserStatus.ACTIVE);
-
-        return userRepository.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
-    // Returns all registered users.
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    // Returns all users.
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // Finds one user or reports that the ID does not exist.
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found: " + id));
+    // Returns one user by ID.
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     // Updates an existing user's editable details.
-    public User updateUser(Long id, RegisterRequest request) {
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody RegisterRequest request) {
 
-        User user = getUserById(id);
-
-        if (!user.getEmail().equalsIgnoreCase(request.getEmail())
-                && userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already registered");
-        }
-
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setMobileNumber(request.getMobileNumber());
-        user.setGender(request.getGender());
-        user.setCity(request.getCity());
-        user.setState(request.getState());
-        user.setCountry(request.getCountry());
-
-        return userRepository.save(user);
+        return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
-    // Deletes a user after confirming that the ID exists.
-    public void deleteUser(Long id) {
-        User user = getUserById(id);
-        userRepository.delete(user);
+    // Deletes a user and returns HTTP 204 on success.
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
