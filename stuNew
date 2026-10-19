@@ -1,113 +1,95 @@
-package com.capico.dto;
+package com.capico.service;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import java.util.List;
 
-// Contains only the information required to register a user.
-public class RegisterRequest {
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-    @NotBlank(message = "First name is required")
-    private String firstName;
+import com.capico.dto.RegisterRequest;
+import com.capico.entity.Role;
+import com.capico.entity.User;
+import com.capico.entity.UserStatus;
+import com.capico.exception.DuplicateEmailException;
+import com.capico.exception.ResourceNotFoundException;
+import com.capico.repository.UserRepository;
 
-    @NotBlank(message = "Last name is required")
-    private String lastName;
+// Contains business logic for user registration and CRUD operations.
+@Service
+public class UserService {
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Enter a valid email address")
-    private String email;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must contain at least 8 characters")
-    private String password;
-
-    @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^[0-9]{10}$",
-             message = "Mobile number must contain exactly 10 digits")
-    private String mobileNumber;
-
-    @NotBlank(message = "Gender is required")
-    private String gender;
-
-    @NotBlank(message = "City is required")
-    private String city;
-
-    @NotBlank(message = "State is required")
-    private String state;
-
-    @NotBlank(message = "Country is required")
-    private String country;
-
-    public String getFirstName() {
-        return firstName;
+    // Injects the repository and password encoder.
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    // Registers a user with a unique email and encoded password.
+    public User createUser(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email is already registered");
+        }
+
+        User user = new User();
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setMobileNumber(request.getMobileNumber());
+        user.setGender(request.getGender());
+        user.setCity(request.getCity());
+        user.setState(request.getState());
+        user.setCountry(request.getCountry());
+
+        // Clients cannot assign themselves the ADMIN role.
+        user.setRole(Role.USER);
+        user.setStatus(UserStatus.ACTIVE);
+
+        return userRepository.save(user);
     }
 
-    public String getLastName() {
-        return lastName;
+    // Returns all registered users.
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    // Finds one user or reports that the ID does not exist.
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found: " + id));
     }
 
-    public String getEmail() {
-        return email;
+    // Updates an existing user's editable details.
+    public User updateUser(Long id, RegisterRequest request) {
+
+        User user = getUserById(id);
+
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email is already registered");
+        }
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setMobileNumber(request.getMobileNumber());
+        user.setGender(request.getGender());
+        user.setCity(request.getCity());
+        user.setState(request.getState());
+        user.setCountry(request.getCountry());
+
+        return userRepository.save(user);
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getMobileNumber() {
-        return mobileNumber;
-    }
-
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    // Deletes a user after confirming that the ID exists.
+    public void deleteUser(Long id) {
+        User user = getUserById(id);
+        userRepository.delete(user);
     }
 }
