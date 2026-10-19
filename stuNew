@@ -1,89 +1,12 @@
-import java.util.*;
+spring.application.name=auth-service
+server.port=8081
 
-public class UserInterface {
+spring.datasource.url=jdbc:mysql://localhost:3306/capico_auth_db
+spring.datasource.username=root
+spring.datasource.password=YOUR_MYSQL_PASSWORD
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-    public static void main(String[] args) {
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
 
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("Enter the array size");
-        int size = sc.nextInt();
-
-        if (size < 1 || size > 5) {
-            System.out.println(size + " is an invalid array size");
-            return;
-        }
-
-        System.out.println("Enter the numbers");
-
-        int[] arr = new int[size];
-
-        for (int i = 0; i < size; i++) {
-            arr[i] = sc.nextInt();
-
-            if (arr[i] <= 0 || arr[i] >= 100) {
-                System.out.println(arr[i] + " is an invalid input");
-                return;
-            }
-        }
-
-        ArrayList<Integer> result = new ArrayList<>();
-
-        for (int i = 0; i < size; i++) {
-
-            int n = arr[i];
-
-            // Number itself must be prime
-            if (!isPrime(n)) {
-                continue;
-            }
-
-            int sum = 0;
-
-            for (int j = 2; j < n; j++) {
-
-                if (isPrime(j)) {
-                    sum += j;
-                }
-
-                if (sum == n) {
-                    result.add(n);
-                    break;
-                }
-
-                if (sum > n) {
-                    break;
-                }
-            }
-        }
-
-        if (result.size() != 0) {
-
-            System.out.println("The sum of prime numbers is");
-
-            for (int n : result) {
-                System.out.println(n);
-            }
-
-        } else {
-
-            System.out.println(
-                "The " + size + " numbers are not sum of prime numbers"
-            );
-        }
-    }
-
-    public static boolean isPrime(int n) {
-
-        if (n < 2)
-            return false;
-
-        for (int i = 2; i * i <= n; i++) {
-
-            if (n % i == 0)
-                return false;
-        }
-
-        return true;
-    }
-}
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
