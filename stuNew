@@ -1,31 +1,103 @@
-package com.capico.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+<!-- JWT API, implementation, and JSON support. -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.12.6</version>
+</dependency>
 
-// Holds the email and password submitted during login.
-public class LoginRequest {
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+</dependency>
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Enter a valid email address")
-    private String email;
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+</dependency>
 
-    @NotBlank(message = "Password is required")
-    private String password;
 
-    public String getEmail() {
-        return email;
+
+# JWT signing secret: replace with a securely generated Base64 key.
+jwt.secret=${JWT_SECRET}
+
+# Token validity: 60 minutes.
+jwt.expiration=3600000
+
+
+
+
+package com.capico.service;
+
+import java.util.Date;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+
+// Creates and validates JWT tokens.
+@Service
+public class JwtService {
+
+    private final SecretKey signingKey;
+    private final long expiration;
+
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long expiration) {
+
+        // Converts the Base64 secret into a cryptographic key.
+        this.signingKey = Keys.hmacShaKeyFor(
+                Decoders.BASE64.decode(secret));
+
+        this.expiration = expiration;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    // Creates a signed JWT containing the user's email.
+    public String generateToken(String email) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expiration);
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(signingKey)
+                .compact();
     }
 
-    public String getPassword() {
-        return password;
+    // Reads claims only after verifying the token's signature.
+    private Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    // Returns the email stored in the token.
+    public String extractEmail(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    // Checks the signature and expiry of a token.
+    public boolean isTokenValid(String token) {
+        try {
+            extractClaims(token);
+            return true;
+        } catch (io.jsonwebtoken.JwtException
+                 | IllegalArgumentException e) {
+            return false;
+        }
     }
 }
