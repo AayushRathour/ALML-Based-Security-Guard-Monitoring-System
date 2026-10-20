@@ -1,75 +1,51 @@
 
 package com.capico.service;
 
-import java.util.Date;
-
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import com.capico.dto.LoginRequest;
+import com.capico.dto.LoginResponse;
+import com.capico.entity.User;
+import com.capico.entity.UserStatus;
+import com.capico.repository.UserRepository;
 
-// Generates and validates signed JWT tokens.
+// Handles login verification and JWT generation.
 @Service
-public class JwtService {
+public class AuthService {
 
-    private final SecretKey signingKey;
-    private final long expiration;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public JwtService(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expiration) {
-
-        this.signingKey = Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode(secret));
-
-        this.expiration = expiration;
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    // Creates a token containing the user's email and expiry.
-    public String generateToken(String email) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expiration);
+    // Verifies credentials before issuing a JWT.
+    public LoginResponse login(LoginRequest request) {
 
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(signingKey)
-                .compact();
-    }
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new BadCredentialsException("Invalid email or password"));
 
-    // Verifies the signature and extracts the token claims.
-    private Claims extractClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(signingKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    // Extracts the email from a verified token.
-    public String extractEmail(String token) {
-        return extractClaims(token).getSubject();
-    }
-
-    // Returns false for invalid, malformed, or expired tokens.
-    public boolean isTokenValid(String token) {
-        try {
-            extractClaims(token);
-            return true;
-        } catch (io.jsonwebtoken.JwtException
-                 | IllegalArgumentException e) {
-            return false;
+        if (!passwordEncoder.matches(
+                request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Invalid email or password");
         }
-    }
 
-    // Returns the configured token lifetime in milliseconds.
-    public long getExpiration() {
-        return expiration;
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new BadCredentialsException("Account is not active");
+        }
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse(token, jwtService.getExpiration());
     }
 }
