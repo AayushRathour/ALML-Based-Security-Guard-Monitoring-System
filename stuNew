@@ -1,71 +1,70 @@
 
-package com.capico.dto;
+package com.capico.security;
 
-import com.capico.entity.Role;
-import com.capico.entity.UserStatus;
+import java.io.IOException;
 
-// Exposes safe user details without returning the password.
-public class UserResponse {
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-    private Long id;
-    private String fullName;
-    private String email;
-    private Role role;
-    private UserStatus status;
+import com.capico.service.JwtService;
 
-    public UserResponse() {
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+// Authenticates requests that contain a valid Bearer JWT.
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+
+    public JwtAuthenticationFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
     }
 
-    public UserResponse(
-            Long id,
-            String fullName,
-            String email,
-            Role role,
-            UserStatus status) {
-        this.id = id;
-        this.fullName = fullName;
-        this.email = email;
-        this.role = role;
-        this.status = status;
-    }
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
-    public Long getId() {
-        return id;
-    }
+        String header = request.getHeader("Authorization");
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+        // Continue normally when no Bearer token is supplied.
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-    public String getFullName() {
-        return fullName;
-    }
+        String token = header.substring(7);
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+        // Authenticate only if the token is valid and no user is authenticated yet.
+        if (jwtService.isTokenValid(token)
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-    public String getEmail() {
-        return email;
-    }
+            String email = jwtService.extractEmail(token);
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            email,
+                            null,
+                            User.withUsername(email)
+                                    .password("")
+                                    .authorities("ROLE_USER")
+                                    .build()
+                                    .getAuthorities());
 
-    public Role getRole() {
-        return role;
-    }
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request));
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
 
-    public UserStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(UserStatus status) {
-        this.status = status;
+        filterChain.doFilter(request, response);
     }
 }
