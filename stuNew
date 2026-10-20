@@ -1,56 +1,75 @@
 
-package com.capico.config;
+package com.capico.service;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import java.util.Date;
 
-import com.capico.security.JwtAuthenticationFilter;
+import javax.crypto.SecretKey;
 
-// Configures stateless JWT authentication.
-@Configuration
-public class SecurityConfig {
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+// Generates and validates signed JWT tokens.
+@Service
+public class JwtService {
+
+    private final SecretKey signingKey;
+    private final long expiration;
+
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long expiration) {
+
+        this.signingKey = Keys.hmacShaKeyFor(
+                Decoders.BASE64.decode(secret));
+
+        this.expiration = expiration;
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    // Creates a token containing the user's email and expiry.
+    public String generateToken(String email) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expiration);
 
-        http
-            .csrf(csrf -> csrf.disable())
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/auth/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**"
-                ).permitAll()
-                .anyRequest().authenticated())
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(signingKey)
+                .compact();
     }
 
-    // Used to hash passwords during registration and verify them at login.
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    // Verifies the signature and extracts the token claims.
+    private Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    // Extracts the email from a verified token.
+    public String extractEmail(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    // Returns false for invalid, malformed, or expired tokens.
+    public boolean isTokenValid(String token) {
+        try {
+            extractClaims(token);
+            return true;
+        } catch (io.jsonwebtoken.JwtException
+                 | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Returns the configured token lifetime in milliseconds.
+    public long getExpiration() {
+        return expiration;
     }
 }
