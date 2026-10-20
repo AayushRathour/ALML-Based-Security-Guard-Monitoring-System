@@ -1,77 +1,88 @@
 
-package com.capico.controller;
+package com.capico.service;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.capico.dto.RegisterRequest;
-import com.capico.dto.UserResponse;
+import com.capico.entity.Role;
 import com.capico.entity.User;
+import com.capico.entity.UserStatus;
 import com.capico.exception.DuplicateEmailException;
-import com.capico.service.UserService;
+import com.capico.exception.ResourceNotFoundException;
+import com.capico.repository.UserRepository;
 
-import jakarta.validation.Valid;
+// Handles user registration and CRUD operations.
+@Service
+@Transactional
+public class UserService {
 
-// Provides user CRUD endpoints with safe response DTOs.
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(
-            @Valid @RequestBody RegisterRequest request)
+    public User createUser(RegisterRequest request)
             throws DuplicateEmailException {
 
-        User user = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(user));
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email is already registered");
+        }
+
+        User user = new User();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
+        user.setStatus(UserStatus.ACTIVE);
+
+        return userRepository.save(user);
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.getAllUsers()
-                .stream()
-                .map(this::toResponse)
-                .toList();
-
-        return ResponseEntity.ok(users);
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(toResponse(userService.getUserById(id)));
+    @Transactional(readOnly = true)
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found: " + id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody RegisterRequest request)
+    public User updateUser(Long id, RegisterRequest request)
             throws DuplicateEmailException {
 
-        return ResponseEntity.ok(
-                toResponse(userService.updateUser(id, request)));
+        User user = getUserById(id);
+
+        if (!user.getEmail().equals(request.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email is already registered");
+        }
+
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+
+        // Only replace the password when a new one is provided.
+        if (request.getPassword() != null
+                && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        return userRepository.save(user);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getStatus());
+    public void deleteUser(Long id) {
+        User user = getUserById(id);
+        userRepository.delete(user);
     }
 }
