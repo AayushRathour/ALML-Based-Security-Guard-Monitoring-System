@@ -1,37 +1,51 @@
 
-package com.capico.controller;
+package com.capico.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.capico.dto.LoginRequest;
 import com.capico.dto.LoginResponse;
-import com.capico.service.AuthService;
+import com.capico.entity.User;
+import com.capico.entity.UserStatus;
+import com.capico.repository.UserRepository;
 
-import jakarta.validation.Valid;
+// Handles login verification and JWT generation.
+@Service
+public class AuthService {
 
-// Exposes authentication endpoints.
-@RestController
-@RequestMapping("/api/auth")
-public class AuthController {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    // Authenticates credentials and returns a JWT.
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+    // Verifies credentials before issuing a JWT.
+    public LoginResponse login(LoginRequest request) {
 
-        LoginResponse response = authService.login(request);
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new BadCredentialsException("Invalid email or password"));
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        if (!passwordEncoder.matches(
+                request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Invalid email or password");
+        }
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new BadCredentialsException("Account is not active");
+        }
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse(token, 3600000);
     }
 }
