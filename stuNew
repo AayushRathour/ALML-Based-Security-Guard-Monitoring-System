@@ -1,40 +1,31 @@
 
-package com.capico.dto;
+package com.capico.config;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 
-// Validates credentials submitted during login.
-public class LoginRequest {
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Enter a valid email address")
-    private String email;
+@Configuration
+public class OpenApiConfig {
 
-    @NotBlank(message = "Password is required")
-    private String password;
+    @Bean
+    public OpenAPI customOpenAPI() {
+        // Define JWT Bearer authentication for Swagger UI.
+        final String schemeName = "bearerAuth";
 
-    public LoginRequest() {
-    }
-
-    public LoginRequest(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+        return new OpenAPI()
+                .components(new Components()
+                        .addSecuritySchemes(schemeName,
+                                new SecurityScheme()
+                                        .name(schemeName)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList(schemeName));
     }
 }
