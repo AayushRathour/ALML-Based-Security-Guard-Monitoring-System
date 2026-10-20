@@ -1,70 +1,37 @@
 
-package com.capico.security;
+package com.capico.controller;
 
-import java.io.IOException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import com.capico.dto.LoginRequest;
+import com.capico.dto.LoginResponse;
+import com.capico.service.AuthService;
 
-import com.capico.service.JwtService;
+import jakarta.validation.Valid;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+// Exposes authentication endpoints.
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
 
-// Authenticates requests that contain a valid Bearer JWT.
-@Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final AuthService authService;
 
-    private final JwtService jwtService;
-
-    public JwtAuthenticationFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+    // Authenticates credentials and returns a JWT.
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
 
-        String header = request.getHeader("Authorization");
+        LoginResponse response = authService.login(request);
 
-        // Continue normally when no Bearer token is supplied.
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = header.substring(7);
-
-        // Authenticate only if the token is valid and no user is authenticated yet.
-        if (jwtService.isTokenValid(token)
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            String email = jwtService.extractEmail(token);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            User.withUsername(email)
-                                    .password("")
-                                    .authorities("ROLE_USER")
-                                    .build()
-                                    .getAuthorities());
-
-            authentication.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
-
-        filterChain.doFilter(request, response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
