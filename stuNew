@@ -1,88 +1,50 @@
 
-package com.capico.service;
+package com.capico.dto;
 
-import java.util.List;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// Validates incoming user registration data.
+public class RegisterRequest {
 
-import com.capico.dto.RegisterRequest;
-import com.capico.entity.Role;
-import com.capico.entity.User;
-import com.capico.entity.UserStatus;
-import com.capico.exception.DuplicateEmailException;
-import com.capico.exception.ResourceNotFoundException;
-import com.capico.repository.UserRepository;
+    @NotBlank(message = "Full name is required")
+    @Size(max = 100, message = "Full name cannot exceed 100 characters")
+    private String fullName;
 
-// Handles user registration and CRUD operations.
-@Service
-@Transactional
-public class UserService {
+    @NotBlank(message = "Email is required")
+    @Email(message = "Enter a valid email address")
+    @Size(max = 150, message = "Email cannot exceed 150 characters")
+    private String email;
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 72, message = "Password must be 8 to 72 characters")
+    private String password;
 
-    public UserService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    public RegisterRequest() {
     }
 
-    public User createUser(RegisterRequest request)
-            throws DuplicateEmailException {
-
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already registered");
-        }
-
-        User user = new User();
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER);
-        user.setStatus(UserStatus.ACTIVE);
-
-        return userRepository.save(user);
+    public String getFullName() {
+        return fullName;
     }
 
-    @Transactional(readOnly = true)
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    @Transactional(readOnly = true)
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found: " + id));
+    public String getEmail() {
+        return email;
     }
 
-    public User updateUser(Long id, RegisterRequest request)
-            throws DuplicateEmailException {
-
-        User user = getUserById(id);
-
-        if (!user.getEmail().equals(request.getEmail())
-                && userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already registered");
-        }
-
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-
-        // Only replace the password when a new one is provided.
-        if (request.getPassword() != null
-                && !request.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-
-        return userRepository.save(user);
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void deleteUser(Long id) {
-        User user = getUserById(id);
-        userRepository.delete(user);
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
