@@ -1,51 +1,16 @@
 
-package com.capico.service;
+package com.capico.repository;
 
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
-import com.capico.dto.LoginRequest;
-import com.capico.dto.LoginResponse;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.capico.entity.User;
-import com.capico.entity.UserStatus;
-import com.capico.repository.UserRepository;
 
-// Handles login verification and JWT generation.
-@Service
-public class AuthService {
+// Provides database operations for users.
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    Optional<User> findByEmail(String email);
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
-
-    // Verifies credentials before issuing a JWT.
-    public LoginResponse login(LoginRequest request) {
-
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new BadCredentialsException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(
-                request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid email or password");
-        }
-
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new BadCredentialsException("Account is not active");
-        }
-
-        String token = jwtService.generateToken(user.getEmail());
-
-        return new LoginResponse(token, jwtService.getExpiration());
-    }
+    boolean existsByEmail(String email);
 }
